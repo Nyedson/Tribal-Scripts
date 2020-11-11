@@ -1,196 +1,21 @@
-/*
- * Script Name: Barbs Finder
- * Version: v1.3.4
- * Last Updated: 2020-10-09
- * Author: RedAlert
- * Author URL: https://twscripts.ga/
- * Author Contact: RedAlert#9859 (Discord)
- * Approved: t13981993
- * Approved Date: 2020-05-27
- * Mod: JawJaw
- */
-
-var scriptData = {
-    name: 'Barbs Finder',
-    version: 'v1.3.4',
-    author: 'RedAlert',
-    authorUrl: 'https://twscripts.ga/',
-    helpLink: 'https://forum.tribalwars.net/index.php?threads/barb-finder-with-filtering.285289/',
-};
-
-// User Input
-if (typeof DEBUG !== 'boolean') DEBUG = false;
-
-// CONSTANTS
-var VILLAGE_TIME = 'mapVillageTime'; // localStorage key name
-var VILLAGES_LIST = 'mapVillagesList'; // localStorage key name
-var TIME_INTERVAL = 60 * 60 * 1000; // fetch data every hour
-
-// Globals
-var villages = [];
-var barbarians = [];
-
-// Translations
-var translations = {
-    en_DK: {
-        'Barbs Finder': 'Barbs Finder',
-        'Min Points:': 'Min Points:',
-        'Max Points:': 'Max Points:',
-        'Radius:': 'Radius:',
-        'Barbs found:': 'Barbs found:',
-        'Coordinates:': 'Coordinates:',
-        'Error while fetching "village.txt"!': 'Error while fetching "village.txt"!',
-        Coords: 'Coords',
-        Points: 'Points',
-        'Dist.': 'Dist.',
-        Attack: 'Attack',
-        Filter: 'Filter',
-        Reset: 'Reset',
-        'No barbarian villages found!': 'No barbarian villages found!',
-        'Current Village:': 'Current Village:',
-        'Sequential Scout Script:': 'Sequential Scout Script:',
-        Help: 'Help',
-    },
-    en_US: {
-        'Barbs Finder': 'Barbs Finder',
-        'Min Points:': 'Min Points:',
-        'Max Points:': 'Max Points:',
-        'Radius:': 'Radius:',
-        'Barbs found:': 'Barbs found:',
-        'Coordinates:': 'Coordinates:',
-        'Error while fetching "village.txt"!': 'Error while fetching "village.txt"!',
-        Coords: 'Coords',
-        Points: 'Points',
-        'Dist.': 'Dist.',
-        Attack: 'Attack',
-        Filter: 'Filter',
-        Reset: 'Reset',
-        'No barbarian villages found!': 'No barbarian villages found!',
-        'Current Village:': 'Current Village:',
-        'Sequential Scout Script:': 'Sequential Scout Script:',
-        Help: 'Help',
-    },
-    sk_SK: {
-        'Barbs Finder': 'HÄ¾adaÄ barbariek',
-        'Min Points:': 'Min bodov:',
-        'Max Points:': 'Max bodov:',
-        'Radius:': 'VzdialenosÅ¥:',
-        'Barbs found:': 'NÃ¡jdenÃ© barbarky:',
-        'Coordinates:': 'SÃºradnice:',
-        'Error while fetching "village.txt"!': 'Chyba pri naÄÃ­tanÃ­ "village.txt"!',
-        Coords: 'SÃºradnice',
-        Points: 'Body',
-        'Dist.': 'Vzdial.',
-        Attack: 'Ãštok',
-        Filter: 'Filter',
-        Reset: 'Reset',
-        'No barbarian villages found!': 'Neboli nÃ¡jdenÃ© Å¾iadne dediny barbarov!',
-        'Current Village:': 'SÃºÄasnÃ¡ dedina:',
-        'Sequential Scout Script:': 'Sequential Scout Script:',
-        Help: 'Pomoc',
-    },
-    fr_FR: {
-        'Barbs Finder': 'Recherche de Barbares',
-        'Min Points:': 'Points Min.:',
-        'Max Points:': 'Points Max.:',
-        'Radius:': 'Radius:',
-        'Barbs found:': 'Barbs found:',
-        'Coordinates:': 'Coordinates:',
-        'Error while fetching "village.txt"!': 'Error while fetching "village.txt"!',
-        Coords: 'Coords',
-        Points: 'Points',
-        'Dist.': 'Dist.',
-        Attack: 'Attaquer',
-        Filter: 'Filtrer',
-        Reset: 'RÃ©initialiser',
-        'No barbarian villages found!': 'No barbarian villages found!',
-        'Current Village:': 'Village Actuel:',
-        'Sequential Scout Script:': 'Sequential Scout Script:',
-        Help: 'Help',
-    },
-    pt_PT: {
-        'Barbs Finder': 'Procurador de BÃ¡rbaras',
-        'Min Points:': 'Pontos mÃ­nimos:',
-        'Max Points:': 'Pontos mÃ¡ximos:',
-        'Radius:': 'Raio:',
-        'Barbs found:': 'BÃ¡rbaras encontradas:',
-        'Coordinates:': 'Coordenadas:',
-        'Error while fetching "village.txt"!': 'Erro ao procurar "village.txt"!',
-        Coords: 'Coords',
-        Points: 'Pontos',
-        'Dist.': 'Dist.',
-        Attack: 'Attack',
-        Filter: 'Filtro',
-        Reset: 'Reset',
-        'No barbarian villages found!': 'NÃ£o foram encontradas bÃ¡rbaras!',
-        'Current Village:': 'Aldeia Atual:',
-        'Sequential Scout Script:': 'Sequential Scout Script:',
-        Help: 'Ajuda',
-    },
-};
-
-// Init Debug
-initDebug();
-
-// Init Translations Notice
-initTranslationsNotice();
-
-// Auto-update localStorage villages list
-if (localStorage.getItem(TIME_INTERVAL) != null) {
-    var mapVillageTime = parseInt(localStorage.getItem(VILLAGE_TIME));
-    if (Date.parse(new Date()) >= mapVillageTime + TIME_INTERVAL) {
-        // hour has passed, refetch village.txt
-        fetchVillagesData();
-    } else {
-        // hour has not passed, work with village list from localStorage
-        var data = localStorage.getItem(VILLAGES_LIST);
-        villages = CSVToArray(data);
-        init();
-    }
-} else {
-    // Fetch village.txt
-    fetchVillagesData();
-}
-
-// Fetch 'village.txt' file
-function fetchVillagesData() {
-    $.get('map/village.txt', function (data) {
-        villages = CSVToArray(data);
-        localStorage.setItem(VILLAGE_TIME, Date.parse(new Date()));
-        localStorage.setItem(VILLAGES_LIST, data);
-    })
-        .done(function () {
-            init();
-        })
-        .fail(function (error) {
-            console.error(`${scriptInfo()} Error:`, error);
-            UI.ErrorMessage(`${tt('Error while fetching "village.txt"!')}`, 4000);
-        });
-}
-
-// Initialize Script
-function init() {
-    // Filter out only Barbarian villages
-    findBarbarianVillages();
-    // Show popup
-    var content = `
+var scriptData={name:"Barbs Finder",version:"v1.3.4",author:"RedAlert",authorUrl:"https://twscripts.ga/",helpLink:"https://forum.tribalwars.net/index.php?threads/barb-finder-with-filtering.285289/"};"boolean"!=typeof DEBUG&&(DEBUG=!1);var VILLAGE_TIME="mapVillageTime",VILLAGES_LIST="mapVillagesList",TIME_INTERVAL=3600000,villages=[],barbarians=[],translations={en_DK:{"Barbs Finder":"Barbs Finder","Min Points:":"Min Points:","Max Points:":"Max Points:","Radius:":"Radius:","Barbs found:":"Barbs found:","Coordinates:":"Coordinates:",'Error while fetching "village.txt"!':"Error while fetching \"village.txt\"!",Coords:"Coords",Points:"Points","Dist.":"Dist.",Attack:"Attack",Filter:"Filter",Reset:"Reset","No barbarian villages found!":"No barbarian villages found!","Current Village:":"Current Village:","Sequential Scout Script:":"Sequential Scout Script:",Help:"Help"},en_US:{"Barbs Finder":"Barbs Finder","Min Points:":"Min Points:","Max Points:":"Max Points:","Radius:":"Radius:","Barbs found:":"Barbs found:","Coordinates:":"Coordinates:",'Error while fetching "village.txt"!':"Error while fetching \"village.txt\"!",Coords:"Coords",Points:"Points","Dist.":"Dist.",Attack:"Attack",Filter:"Filter",Reset:"Reset","No barbarian villages found!":"No barbarian villages found!","Current Village:":"Current Village:","Sequential Scout Script:":"Sequential Scout Script:",Help:"Help"},sk_SK:{"Barbs Finder":"H\xC4\xBEada\xC4\x8D barbariek","Min Points:":"Min bodov:","Max Points:":"Max bodov:","Radius:":"Vzdialenos\xC5\xA5:","Barbs found:":"N\xC3\xA1jden\xC3\xA9 barbarky:","Coordinates:":"S\xC3\xBAradnice:",'Error while fetching "village.txt"!':"Chyba pri na\xC4\x8D\xC3\xADtan\xC3\xAD \"village.txt\"!",Coords:"S\xC3\xBAradnice",Points:"Body","Dist.":"Vzdial.",Attack:"\xC3\u0161tok",Filter:"Filter",Reset:"Reset","No barbarian villages found!":"Neboli n\xC3\xA1jden\xC3\xA9 \xC5\xBEiadne dediny barbarov!","Current Village:":"S\xC3\xBA\xC4\x8Dasn\xC3\xA1 dedina:","Sequential Scout Script:":"Sequential Scout Script:",Help:"Pomoc"},fr_FR:{"Barbs Finder":"Recherche de Barbares","Min Points:":"Points Min.:","Max Points:":"Points Max.:","Radius:":"Radius:","Barbs found:":"Barbs found:","Coordinates:":"Coordinates:",'Error while fetching "village.txt"!':"Error while fetching \"village.txt\"!",Coords:"Coords",Points:"Points","Dist.":"Dist.",Attack:"Attaquer",Filter:"Filtrer",Reset:"R\xC3\xA9initialiser","No barbarian villages found!":"No barbarian villages found!","Current Village:":"Village Actuel:","Sequential Scout Script:":"Sequential Scout Script:",Help:"Help"},pt_PT:{"Barbs Finder":"Procurador de B\xC3\xA1rbaras","Min Points:":"Pontos m\xC3\xADnimos:","Max Points:":"Pontos m\xC3\xA1ximos:","Radius:":"Raio:","Barbs found:":"B\xC3\xA1rbaras encontradas:","Coordinates:":"Coordenadas:",'Error while fetching "village.txt"!':"Erro ao procurar \"village.txt\"!",Coords:"Coords",Points:"Pontos","Dist.":"Dist.",Attack:"Attack",Filter:"Filtro",Reset:"Reset","No barbarian villages found!":"N\xC3\xA3o foram encontradas b\xC3\xA1rbaras!","Current Village:":"Aldeia Atual:","Sequential Scout Script:":"Sequential Scout Script:",Help:"Ajuda"}};if(initDebug(),initTranslationsNotice(),null!=localStorage.getItem(TIME_INTERVAL)){var mapVillageTime=parseInt(localStorage.getItem(VILLAGE_TIME));if(Date.parse(new Date)>=mapVillageTime+TIME_INTERVAL)fetchVillagesData();else{var data=localStorage.getItem(VILLAGES_LIST);villages=CSVToArray(data),init()}}else fetchVillagesData();function fetchVillagesData(){$.get("map/village.txt",function(a){villages=CSVToArray(a),localStorage.setItem(VILLAGE_TIME,Date.parse(new Date)),localStorage.setItem(VILLAGES_LIST,a)}).done(function(){init()}).fail(function(a){console.error(`${scriptInfo()} Error:`,a),UI.ErrorMessage(`${tt("Error while fetching \"village.txt\"!")}`,4e3)})}function init(){findBarbarianVillages();var a=`
 		<div class="ra-mb15">
-			<strong>${tt('Current Village:')}</strong>
+			<strong>${tt("Current Village:")}</strong>
 			<a href="/game.php?screen=info_village&id=${game_data.village.id}" target="_blank" rel="noopener noreferrer">
 				${game_data.village.name}
 			</a>
 		</div>
 		<div class="ra-flex ra-mb10">
 			<div class="ra-flex-4">
-				<label for="minPoints" class="ra-fw600"">${tt('Min Points:')}</label>
+				<label for="minPoints" class="ra-fw600"">${tt("Min Points:")}</label>
 				<input type="text" id="minPoints" class="ra-form-control" value="26">
 			</div>
 			<div class="ra-flex-4">
-				<label for="maxPoints" class="ra-fw600"">${tt('Max Points:')}</label>
+				<label for="maxPoints" class="ra-fw600"">${tt("Max Points:")}</label>
 				<input type="text" id="maxPoints" class="ra-form-control" value="12154">
 			</div>
 			<div class="ra-flex-4">
-				<label for="radius" class="ra-fw600">${tt('Radius:')}</label>
+				<label for="radius" class="ra-fw600">${tt("Radius:")}</label>
 				<select id="radius_choser" class="ra-form-control">
 					<option value="10">10</option>
 					<option value="20">20</option>
@@ -211,129 +36,28 @@ function init() {
 			</div>
 		</div>
 		<a href="javascript:void(0);" onClick="filterBarbs();" class="btn btn-confirm-yes">
-			${tt('Filter')}
+			${tt("Filter")}
 		</a>
 		<a href="javascript:void(0);" onClick="resetFilters();" class="btn btn-confirm-no">
-			${tt('Reset')}
+			${tt("Reset")}
 		</a>
 		<p class="ra-fs12">
-			<strong>${tt('Barbs found:')}</strong>
+			<strong>${tt("Barbs found:")}</strong>
 			<span id="barbsCount">0</span>
 		</p>
 		<div class="ra-mb10">
-			<label class="ra-fw600" for="barbCoordsList">${tt('Coordinates:')}</label>
+			<label class="ra-fw600" for="barbCoordsList">${tt("Coordinates:")}</label>
 			<textarea id="barbCoordsList" class="ra-textarea" readonly></textarea>
         </div>
         <div class="ra-mb10">
-			<label class="ra-fw600" for="barbScoutScript">${tt('Sequential Scout Script:')}</label>
+			<label class="ra-fw600" for="barbScoutScript">${tt("Sequential Scout Script:")}</label>
 			<textarea id="barbScoutScript" class="ra-textarea" readonly></textarea>
 		</div>
 		<div id="barbariansTable" style="display:none;max-height:240px;overflow-y:auto;margin-bottom:8px;"></div>
 		<div id="noBarbariansFound" style="display:none;">
-			<p><strong>${tt('No barbarian villages found!')}</strong>
+			<p><strong>${tt("No barbarian villages found!")}</strong>
 		</div>
-	`;
-
-    const popupContent = preparePopupContent(content);
-    Dialog.show('content', popupContent);
-}
-
-// Populate villages list
-function findBarbarianVillages() {
-    villages.forEach((village) => {
-        if (village[4] == '0') {
-            barbarians.push(village);
-        }
-    });
-
-    if (DEBUG) {
-        console.debug(`${scriptInfo()} Barbarian Villages:`, barbarians);
-    }
-}
-
-// Filter Barbarians
-function filterBarbs() {
-    var minPoints = parseInt($('#minPoints').val().trim());
-    var maxPoints = parseInt($('#maxPoints').val().trim());
-    var radius = parseInt($('#radius_choser').val());
-
-    if (DEBUG) {
-        console.debug(`${scriptInfo()} Minimum Points:`, minPoints);
-        console.debug(`${scriptInfo()} Maximum Points:`, maxPoints);
-    }
-
-    // Filter by min and max points
-    const filteredBarbs = barbarians.filter((barbarian) => {
-        return barbarian[5] >= minPoints && barbarian[5] <= maxPoints;
-    });
-
-    // Filter by radius
-    const filteredByRadiusBarbs = filteredBarbs.filter((barbarian) => {
-        var distance = calcDistanceFromCurrentVillage(barbarian);
-        if (distance <= radius) {
-            return barbarian;
-        }
-    });
-
-    updateUI(filteredByRadiusBarbs);
-}
-
-// Reset Filters
-function resetFilters() {
-    $('#minPoints').val(26);
-    $('#maxPoints').val(12154);
-    $('#radius_choser').val('20');
-    $('#barbsCount').text('0');
-    $('#barbCoordsList').text('');
-    $('#barbScoutScript').val('');
-    $('#barbariansTable').hide();
-    $('#barbariansTable').html('');
-}
-
-// Update UI
-function updateUI(barbs) {
-    if (barbs.length > 0) {
-        var barbariansCoordsArray = getVillageCoord(barbs);
-        var barbariansCount = barbariansCoordsArray.length;
-
-        var barbariansCoordsList = barbariansCoordsArray.join(' ');
-
-        var scoutScript = generateScoutScript(barbariansCoordsList);
-
-        var tableContent = generateBarbariansTable(barbs);
-
-        $('#barbsCount').text(barbariansCount);
-        $('#barbCoordsList').text(barbariansCoordsList);
-        $('#barbScoutScript').val(scoutScript);
-        $('#barbariansTable').show();
-        $('#barbariansTable').html(tableContent);
-    } else {
-        resetFilters();
-        $('#noBarbariansFound').fadeIn(200);
-        setTimeout(function () {
-            $('#noBarbariansFound').fadeOut(200);
-        }, 4000);
-    }
-}
-
-// Generate Table
-function generateBarbariansTable(barbs) {
-    if (barbs.length < 1) return;
-
-    var barbariansWithDistance = [];
-
-    barbs.forEach((barb) => {
-        var distance = calcDistanceFromCurrentVillage(barb);
-        barbariansWithDistance.push([...barb, distance]);
-    });
-
-    barbariansWithDistance.sort((a, b) => {
-        return a[7] - b[7];
-    });
-
-    var tableRows = generateTableRows(barbariansWithDistance);
-
-    var tableContent = `
+	`;const b=preparePopupContent(a);Dialog.show("content",b)}function findBarbarianVillages(){villages.forEach(a=>{"0"==a[4]&&barbarians.push(a)}),DEBUG&&console.debug(`${scriptInfo()} Barbarian Villages:`,barbarians)}function filterBarbs(){var a=parseInt($("#minPoints").val().trim()),b=parseInt($("#maxPoints").val().trim()),c=parseInt($("#radius_choser").val());DEBUG&&(console.debug(`${scriptInfo()} Minimum Points:`,a),console.debug(`${scriptInfo()} Maximum Points:`,b));const d=barbarians.filter(c=>c[5]>=a&&c[5]<=b),e=d.filter(a=>{var b=calcDistanceFromCurrentVillage(a);if(b<=c)return a});updateUI(e)}function resetFilters(){$("#minPoints").val(26),$("#maxPoints").val(12154),$("#radius_choser").val("20"),$("#barbsCount").text("0"),$("#barbCoordsList").text(""),$("#barbScoutScript").val(""),$("#barbariansTable").hide(),$("#barbariansTable").html("")}function updateUI(a){if(0<a.length){var b=getVillageCoord(a),c=b.length,d=b.join(" "),e=generateScoutScript(d),f=generateBarbariansTable(a);$("#barbsCount").text(c),$("#barbCoordsList").text(d),$("#barbScoutScript").val(e),$("#barbariansTable").show(),$("#barbariansTable").html(f)}else resetFilters(),$("#noBarbariansFound").fadeIn(200),setTimeout(function(){$("#noBarbariansFound").fadeOut(200)},4e3)}function generateBarbariansTable(a){if(!(1>a.length)){var b=[];a.forEach(a=>{var c=calcDistanceFromCurrentVillage(a);b.push([...a,c])}),b.sort((c,a)=>c[7]-a[7]);var c=generateTableRows(b),d=`
 		<table class="vis overview_table ra-table" width="100%">
 			<thead>
 				<tr>
@@ -344,141 +68,56 @@ function generateBarbariansTable(barbs) {
 						K
 					</th>
 					<th>
-						${tt('Coords')}
+						${tt("Coords")}
 					</th>
 					<th>
-						${tt('Points')}
+						${tt("Points")}
 					</td>
 					<th>
-						${tt('Dist.')}
+						${tt("Dist.")}
 					</th>
 					<th>
-						${tt('Attack')}
+						${tt("Attack")}
 					</th>
 				</tr>
 			</thead>
 			<tbody>
-				${tableRows}
+				${c}
 			</tbody>
 		</table>
-	`;
-
-    return tableContent;
-}
-
-// Generate Table Rows
-function generateTableRows(barbs) {
-    var renderTableRows = '';
-
-    barbs.forEach((barb, index) => {
-        index++;
-        var continent = barb[3].charAt(0) + barb[2].charAt(0);
-        renderTableRows += `
+	`;return d}}function generateTableRows(a){var b="";return a.forEach((a,c)=>{c++;var d=a[3].charAt(0)+a[2].charAt(0);b+=`
 			<tr>
 				<td class="ra-tac">
-					${index}
+					${c}
 				</td>
 				<td class="ra-tac">
-					${continent}
+					${d}
 				</td>
 				<td class="ra-tac">
-					<a href="game.php?screen=info_village&id=${barb[0]}" target="_blank" rel="noopener noreferrer">
-						${barb[2]}|${barb[3]}
+					<a href="game.php?screen=info_village&id=${a[0]}" target="_blank" rel="noopener noreferrer">
+						${a[2]}|${a[3]}
 					</a>
 				</td>
-				<td>${formatAsNumber(barb[5])}</td>
-				<td class="ra-tac">${barb[7]}</td>
+				<td>${formatAsNumber(a[5])}</td>
+				<td class="ra-tac">${a[7]}</td>
 				<td class="ra-tac">
-					<a href="/game.php?screen=place&target=${barb[0]}" target="_blank" rel="noopener noreferrer" class="btn">
-						${tt('Attack')}
+					<a href="/game.php?screen=place&target=${a[0]}" target="_blank" rel="noopener noreferrer" class="btn">
+						${tt("Attack")}
 					</a>
 				</td>
 			</tr>
-		`;
-    });
-
-    return renderTableRows;
-}
-
-// Helper: Scout Script Generator
-function generateScoutScript(barbsList) {
-    return `javascript:coords='${barbsList}';var doc=document;if(window.frames.length>0 && window.main!=null)doc=window.main.document;url=doc.URL;if(url.indexOf('screen=place')==-1)alert('Use the script in the rally point page!');coords=coords.split(' ');index=0;farmcookie=document.cookie.match('(^|;) ?farm=([^;]*)(;|$)');if(farmcookie!=null)index=parseInt(farmcookie[2]);if(index>=coords.length)alert('All villages were extracted, now start from the first!');if(index>=coords.length)index=0;coords=coords[index];coords=coords.split('|');index=index+1;cookie_date=new Date(2021,3,27);document.cookie ='farm='+index+';expires='+cookie_date.toGMTString();doc.forms[0].x.value=coords[0];doc.forms[0].y.value=coords[1];$('#place_target').find('input').val(coords[0]+'|'+coords[1]);doc.forms[0].spy.value=1;`;
-}
-
-// Helper: Calculate distance between current and a given village
-function calcDistanceFromCurrentVillage(village) {
-    var x1 = game_data.village.x,
-        y1 = game_data.village.y,
-        x2 = village[2],
-        y2 = village[3];
-    //calculate distance from current village
-    var a = x1 - x2;
-    var b = y1 - y2;
-    var distance = Math.round(Math.hypot(a, b));
-    return distance;
-}
-
-// Helper: Get Villages Coords Array
-function getVillageCoord(villages) {
-    var villageCoords = [];
-    villages.forEach((village) => {
-        villageCoords.push(village[2] + '|' + village[3]);
-    });
-    return villageCoords;
-}
-
-// Helper: Format as number
-function formatAsNumber(number) {
-    return parseInt(number).toLocaleString('de');
-}
-
-//Helper: Convert CSV data into Array
-function CSVToArray(strData, strDelimiter) {
-    strDelimiter = strDelimiter || ',';
-    var objPattern = new RegExp(
-        '(\\' + strDelimiter + '|\\r?\\n|\\r|^)' + '(?:"([^"]*(?:""[^"]*)*)"|' + '([^"\\' + strDelimiter + '\\r\\n]*))',
-        'gi'
-    );
-    var arrData = [[]];
-    var arrMatches = null;
-    while ((arrMatches = objPattern.exec(strData))) {
-        var strMatchedDelimiter = arrMatches[1];
-        if (strMatchedDelimiter.length && strMatchedDelimiter !== strDelimiter) {
-            arrData.push([]);
-        }
-        var strMatchedValue;
-
-        if (arrMatches[2]) {
-            strMatchedValue = arrMatches[2].replace(new RegExp('""', 'g'), '"');
-        } else {
-            strMatchedValue = arrMatches[3];
-        }
-        arrData[arrData.length - 1].push(strMatchedValue);
-    }
-    return arrData;
-}
-
-// Helper: Generates script info
-function scriptInfo() {
-    return `[${scriptData.name} ${scriptData.version}]`;
-}
-
-// Helper: Prepare Popup Content
-function preparePopupContent(popupBody, minWidth = '340px', maxWidth = '360px') {
-    const popupHeader = `
+		`}),b}function generateScoutScript(a){return`javascript:coords='${a}';var doc=document;if(window.frames.length>0 && window.main!=null)doc=window.main.document;url=doc.URL;if(url.indexOf('screen=place')==-1)alert('Use the script in the rally point page!');coords=coords.split(' ');index=0;farmcookie=document.cookie.match('(^|;) ?farm=([^;]*)(;|$)');if(farmcookie!=null)index=parseInt(farmcookie[2]);if(index>=coords.length)alert('All villages were extracted, now start from the first!');if(index>=coords.length)index=0;coords=coords[index];coords=coords.split('|');index=index+1;cookie_date=new Date(2021,3,27);document.cookie ='farm='+index+';expires='+cookie_date.toGMTString();doc.forms[0].x.value=coords[0];doc.forms[0].y.value=coords[1];$('#place_target').find('input').val(coords[0]+'|'+coords[1]);doc.forms[0].spy.value=1;`}function calcDistanceFromCurrentVillage(a){var b=game_data.village.x,c=game_data.village.y,d=a[2],e=a[3],f=Math.round(Math.hypot(b-d,c-e));return f}function getVillageCoord(a){var b=[];return a.forEach(a=>{b.push(a[2]+"|"+a[3])}),b}function formatAsNumber(a){return parseInt(a).toLocaleString("de")}function CSVToArray(a,b){b=b||",";for(var c=new RegExp("(\\"+b+"|\\r?\\n|\\r|^)(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|([^\"\\"+b+"\\r\\n]*))","gi"),d=[[]],e=null;e=c.exec(a);){var f=e[1];f.length&&f!==b&&d.push([]);var g;g=e[2]?e[2].replace(/""/g,"\""):e[3],d[d.length-1].push(g)}return d}function scriptInfo(){return`[${scriptData.name} ${scriptData.version}]`}function preparePopupContent(a,b="340px",c="360px"){const d=`
 		<h3 class="ra-fs18 ra-fw600">
 			${tt(scriptData.name)}
 		</h3>
-		<div class="ra-body">`;
-    const popupFooter = `</div><small><strong>${tt(scriptData.name)} ${scriptData.version}</strong> - <a href="${
-        scriptData.authorUrl
-    }" target="_blank" rel="noreferrer noopener">${scriptData.author}</a> - <a href="${
-        scriptData.helpLink
-    }" target="_blank" rel="noreferrer noopener">${tt('Help')}</a></small>`;
-    const popupStyle = `
+		<div class="ra-body">`,e=`</div><small><strong>${tt(scriptData.name)} ${scriptData.version}</strong> - <a href="${scriptData.authorUrl}" target="_blank" rel="noreferrer noopener">${scriptData.author}</a> - <a href="${scriptData.helpLink}" target="_blank" rel="noreferrer noopener">${tt("Help")}</a></small>`;return`
+		${d}
+		${a}
+		${e}
+		${`
 		<style>
 			.popup_box_content { overflow-y: hidden; }
-			.ra-body { width: 100%; min-width: ${minWidth}; max-width: ${maxWidth}; box-sizing: border-box; }
+			.ra-body { width: 100%; min-width: ${b}; max-width: ${c}; box-sizing: border-box; }
 			.ra-fs12 { font-size: 12px; }
 			.ra-fs16 { font-size: 16px; }
 			.ra-fs18 { font-size: 18px; }
@@ -499,52 +138,5 @@ function preparePopupContent(popupBody, minWidth = '340px', maxWidth = '360px') 
 			.ra-flex-6 { flex: 0 0 48%; }
 			.ra-flex-4 { flex: 0 0 30.5%; }
 		</style>
-	`;
-
-    let popupContent = `
-		${popupHeader}
-		${popupBody}
-		${popupFooter}
-		${popupStyle}
-	`;
-
-    return popupContent;
-}
-
-// Helper: Prints universal debug information
-function initDebug() {
-    console.debug(`${scriptInfo()} It works ðŸš€!`);
-    console.debug(`${scriptInfo()} HELP:`, scriptData.helpLink);
-    if (DEBUG) {
-        console.debug(`${scriptInfo()} Market:`, game_data.market);
-        console.debug(`${scriptInfo()} World:`, game_data.world);
-        console.debug(`${scriptInfo()} Screen:`, game_data.screen);
-        console.debug(`${scriptInfo()} Game Version:`, game_data.majorVersion);
-        console.debug(`${scriptInfo()} Game Build:`, game_data.version);
-        console.debug(`${scriptInfo()} Locale:`, game_data.locale);
-        console.debug(`${scriptInfo()} Premium:`, game_data.features.Premium.active);
-    }
-}
-
-// Helper: Text Translator
-function tt(string) {
-    const gameLocale = game_data.locale;
-
-    if (translations[gameLocale] !== undefined) {
-        return translations[gameLocale][string];
-    } else {
-        return translations['en_DK'][string];
-    }
-}
-
-// Helper: Translations Notice
-function initTranslationsNotice() {
-    const gameLocale = game_data.locale;
-
-    if (translations[gameLocale] === undefined) {
-        UI.ErrorMessage(
-            `No translation found for <b>${gameLocale}</b>. <a href="${scriptData.helpLink}" class="btn" target="_blank" rel="noreferrer noopener">Add Yours</a> by replying to the thread.`,
-            4000
-        );
-    }
-}
+	`}
+	`}function initDebug(){console.debug(`${scriptInfo()} It works ðŸš€!`),console.debug(`${scriptInfo()} HELP:`,scriptData.helpLink),DEBUG&&(console.debug(`${scriptInfo()} Market:`,game_data.market),console.debug(`${scriptInfo()} World:`,game_data.world),console.debug(`${scriptInfo()} Screen:`,game_data.screen),console.debug(`${scriptInfo()} Game Version:`,game_data.majorVersion),console.debug(`${scriptInfo()} Game Build:`,game_data.version),console.debug(`${scriptInfo()} Locale:`,game_data.locale),console.debug(`${scriptInfo()} Premium:`,game_data.features.Premium.active))}function tt(a){const b=game_data.locale;return void 0===translations[b]?translations.en_DK[a]:translations[b][a]}function initTranslationsNotice(){const a=game_data.locale;translations[a]===void 0&&UI.ErrorMessage(`No translation found for <b>${a}</b>. <a href="${scriptData.helpLink}" class="btn" target="_blank" rel="noreferrer noopener">Add Yours</a> by replying to the thread.`,4e3)}
