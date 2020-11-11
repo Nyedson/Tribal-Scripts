@@ -127,25 +127,6 @@ var translations = {
         'Sequential Scout Script:': 'Sequential Scout Script:',
         Help: 'Ajuda',
     },
-        pt_BR: {
-        'Barbs Finder': 'Procurador de BÃ¡rbaras',
-        'Min Points:': 'Pontos mÃ­nimos:',
-        'Max Points:': 'Pontos mÃ¡ximos:',
-        'Radius:': 'Raio:',
-        'Barbs found:': 'BÃ¡rbaras encontradas:',
-        'Coordinates:': 'Coordenadas:',
-        'Error while fetching "village.txt"!': 'Erro ao procurar "village.txt"!',
-        Coords: 'Coords',
-        Points: 'Pontos',
-        'Dist.': 'Dist.',
-        Attack: 'Attack',
-        Filter: 'Filtro',
-        Reset: 'Reset',
-        'No barbarian villages found!': 'NÃ£o foram encontradas bÃ¡rbaras!',
-        'Current Village:': 'Aldeia Atual:',
-        'Sequential Scout Script:': 'Sequential Scout Script:',
-        Help: 'Ajuda',
-    },
 };
 
 // Init Debug
