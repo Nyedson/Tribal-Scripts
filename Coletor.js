@@ -46,7 +46,7 @@
 
 
         window.TwCheese = {
-            ROOT: 'https://Nyedson.github.io/twcheese',
+            ROOT: 'aaaaaaa',
             version: 'v1.9-5-gdfbf4da',
             tools: {},
             lastToolUsedId: null,
