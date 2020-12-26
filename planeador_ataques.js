@@ -142,7 +142,7 @@ function escolherOpcoes(){
 		}
 	}
 	
-	if(numero_aldeias==0) UI.InfoMessage('NÃ£o hÃ¡ aldeias a tempo...', 1500, 'error');
+	if(numero_aldeias==0) UI.InfoMessage('Não há aldeias a tempo...', 1500, 'error');
 	$("#numero_possibilidades").html("<b>"+numero_aldeias+"/"+minhasAldeias.length+"</b>");
 
 	for(i=0;i<html.length-1;i++){
@@ -364,7 +364,7 @@ function desenharPlanner(){
 				return;
 			}
 		});
-	var elem = "<div class='vis vis_item' align='center' style='overflow: auto; height: 450px;' id='planer_klinow'><table width='100%'><tr><td width='300'><table style=\"border-spacing: 3px; border-collapse: separate;\"><tr><th>Alvo<th>Data<th>Hora<th>Grupo<th><th><th>CrÃ©ditos/Discord<tr><td><input size=8 type='text' onchange='mostrarDistancia();' value='" + cel +"' id='objetivoCommun' /><td><input size=8 type='text' value='" + formatarDatas(tempoAtual) + "' onchange=\"dataCorreta(this,'.');\" id='data_input'/><td><input size=8 type='text' value='" + formatarHoras(tempoAtual) + "' onchange=\"dataCorreta(this,':');\" id='hora_input'/><td><select id='listGrup' onchange=\"mudarGrupo();\"><option value='"+todasTropas+"'>Todos</select><td onclick=\"mudarSeta(); if($('#escolher_tropas').is(':visible')){ $('#escolher_tropas').hide();$('#lista_tropas').show(); guardarSelecao(); return;}	else{ $('#lista_tropas').hide(); $('#escolher_tropas').show();} \" style=\"cursor:pointer;\"><span id='icone_seta' class='icon header arr_down' ></span><td><input type='button' class='btn' value='CALCULAR' onclick=\"escolherOpcoes();\" id='przycisk'><td>diogorocha18#6499</td></table><td id='carregamento'><img src='"+image_base+"throbber.gif' />";
+	var elem = "<div class='vis vis_item' align='center' style='overflow: auto; height: 450px;' id='planer_klinow'><table width='100%'><tr><td width='300'><table style=\"border-spacing: 3px; border-collapse: separate;\"><tr><th>Alvo<th>Data<th>Hora<th>Grupo<th><th><th>Créditos/Discord<tr><td><input size=8 type='text' onchange='mostrarDistancia();' value='" + cel +"' id='objetivoCommun' /><td><input size=8 type='text' value='" + formatarDatas(tempoAtual) + "' onchange=\"dataCorreta(this,'.');\" id='data_input'/><td><input size=8 type='text' value='" + formatarHoras(tempoAtual) + "' onchange=\"dataCorreta(this,':');\" id='hora_input'/><td><select id='listGrup' onchange=\"mudarGrupo();\"><option value='"+todasTropas+"'>Todos</select><td onclick=\"mudarSeta(); if($('#escolher_tropas').is(':visible')){ $('#escolher_tropas').hide();$('#lista_tropas').show(); guardarSelecao(); return;}	else{ $('#lista_tropas').hide(); $('#escolher_tropas').show();} \" style=\"cursor:pointer;\"><span id='icone_seta' class='icon header arr_down' ></span><td><input type='button' class='btn' value='CALCULAR' onclick=\"escolherOpcoes();\" id='przycisk'><td>diogorocha18#6499</td></table><td id='carregamento'><img src='"+image_base+"throbber.gif' />";
 	elem += "<tr><td colspan=2 width='100%'><table style=\"display: none; border-spacing: 3px; border-collapse: separate;\" id='escolher_tropas' width='100%'></table><table style=\"border-spacing: 3px; border-collapse: separate;\" id='lista_tropas' width='100%'><thead><tr><th id='numero_possibilidades'><span class='icon header village' ></span>";
 
 	for(i=0;i<imagens.length;i++)
@@ -391,7 +391,7 @@ function carregarInfo(){
 			var tabela = $(requestedBody).find('#units_table').get()[0];
 			
 			var grupo = $(requestedBody).find('.vis_item').get()[0].getElementsByTagName(mobile?'option':'a');
-			if(!tabela){ $("#carregamento").html("NÃ£o existem aldeias neste grupo..."); carregando = false; return;}
+			if(!tabela){ $("#carregamento").html("Não existem aldeias neste grupo..."); carregando = false; return;}
 			for(i=1;i<tabela.rows.length;i++){
 				mostrarAldeias[i-1]=true;
 				tropas[i-1] = [];
