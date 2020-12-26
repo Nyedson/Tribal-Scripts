@@ -14,7 +14,7 @@ if(!$("#planer_klinow").length){
 		linkVisualizacaoGeral:"/game.php?",
 		linkComando:"/game.php?",
 		velocidade:[18,22,18,18,9,10,10,11,30,30,10,35],
-		nomesTropas:["Lanceiro","Espadachim","Viking","Arqueiro","Batedor","Cavalaria leve","Arqueiro a cavalo","Cavalaria Pesada","ArÃ­ete","Catapulta","Paladino","Nobre"]
+		nomesTropas:["Lanceiro","Espadachim","Viking","Arqueiro","Batedor","Cavalaria leve","Arqueiro a cavalo","Cavalaria Pesada","Aríete","Catapulta","Paladino","Nobre"]
 	};
 	
 	console.log(info)
@@ -162,7 +162,7 @@ function escolherOpcoes(){
 		tabelaBB[i] = tmp;
 	}
 	tabelaBB.splice(numero_aldeias,tabelaBB.length-numero_aldeias);
-	$('#lista_tropas tbody').html(html.join("\n")+(numero_aldeias?"<tr><td id='export_bb' colspan="+(info.velocidade.length+4)+"><a href='#' onclick=\"$('#export_bb').html('<textarea cols=100 rows=2 onclick=\\'this.select()\\'>[table][**]Unidade[||]Fonte[||]Alvo[||]Hora de saÃ­da[||]Comando[/**]\\n'+tabelaBB.join('')+'[/table]</textarea>');\" ><img src='"+image_base+"igm/export.png' > Exportar CÃ³digo</a>":''));
+	$('#lista_tropas tbody').html(html.join("\n")+(numero_aldeias?"<tr><td id='export_bb' colspan="+(info.velocidade.length+4)+"><a href='#' onclick=\"$('#export_bb').html('<textarea cols=100 rows=2 onclick=\\'this.select()\\'>[table][**]Unidade[||]Fonte[||]Alvo[||]Hora de saída[||]Comando[/**]\\n'+tabelaBB.join('')+'[/table]</textarea>');\" ><img src='"+image_base+"igm/export.png' > Exportar CÃ³digo</a>":''));
 	$('#lista_tropas tbody tr').each(function(i){
 		$(this).addClass(i%2?"row_a":"row_b");
 	});
@@ -369,7 +369,7 @@ function desenharPlanner(){
 
 	for(i=0;i<imagens.length;i++)
 		elem += "<th style=\"cursor:pointer;\" class='"+(unidadesAtivas[i]=="0"?"faded":"")+"' onClick=\"if(this.className == 'faded') this.className=''; else this.className='faded';\"><img title='"+info.nomesTropas[i]+"' src='"+img_tropas+"unit_"+imagens[i]+".png'>";
-	elem += "<th>Hora de SaÃ­da<th><span class=\'icon header time\'><th><b>Comando</b></thead>";
+	elem += "<th>Hora de Saída<th><span class=\'icon header time\'><th><b>Comando</b></thead>";
 	elem += "<tbody></table></table></div>";
 	$(mobile?"#mobileContent":"#contentContainer").prepend(elem);
 }
