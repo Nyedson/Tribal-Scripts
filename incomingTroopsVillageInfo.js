@@ -137,7 +137,7 @@ class Units {
 
 let attackIncs = []; // Store shared incoming attacks
 let supportIncs = []; // Store shared incoming supports
-let sharedSupport = true; // true if one incoming support is shared
+let sharedSupport = false; // true if one incoming support is shared
 let sharedAttack = false; // true if one incoming attack is shared
 
 let table = document.querySelector(".commands-container table:nth-child(1)"); // Incoming commands table
@@ -148,10 +148,10 @@ for (let i = 2; i <= table.rows.length; i++) {
         continue;
     } else if (inc.attributes["data-command-type"].value === "support") {
         supportIncs.push(inc);
-        sharedSupport = true;
+        sharedSupport = false;
     } else if (inc.attributes["data-command-type"].value === "attack") {
         attackIncs.push(inc);
-        sharedAttack = true;
+        sharedAttack = false;
     }
 }  
 
