@@ -59,7 +59,7 @@ let unitConfig =
     </tbody>
 </table>
 <h4>Incoming attack</h4><span id="attackText"></span>
-<table id="incAttackTable" style="margin-bottom: 10px" class="vis" width="100%">
+<table id="incAttackTable" style="margin-top: 10px" class="vis" width="100%">
     <tbody>
         <tr>
             <th style="text-align:center" width="35">
@@ -137,7 +137,7 @@ class Units {
 
 let attackIncs = []; // Store shared incoming attacks
 let supportIncs = []; // Store shared incoming supports
-let sharedSupport = false; // true if one incoming support is shared
+let sharedSupport = true; // true if one incoming support is shared
 let sharedAttack = false; // true if one incoming attack is shared
 
 let table = document.querySelector(".commands-container table:nth-child(1)"); // Incoming commands table
