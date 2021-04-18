@@ -2,7 +2,7 @@
 let titleParent = $("#content_value > table:nth-child(3) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2)");
 let unitConfig =
     `<h4>Incoming support</h4><span id="supportText"></span>
-<table id="incSupportTable" style="margin-top: 10px" class="vis" width="100%">
+<table id="incSupportTable" style="margin-bottom: 10px" class="vis" width="100%">
     <tbody>
         <tr>
             <th style="text-align:center" width="35">
@@ -59,7 +59,7 @@ let unitConfig =
     </tbody>
 </table>
 <h4>Incoming attack</h4><span id="attackText"></span>
-<table id="incAttackTable" style="margin-top: 10px" class="vis" width="100%">
+<table id="incAttackTable" style="margin-bottom: 10px" class="vis" width="100%">
     <tbody>
         <tr>
             <th style="text-align:center" width="35">
@@ -137,8 +137,8 @@ class Units {
 
 let attackIncs = []; // Store shared incoming attacks
 let supportIncs = []; // Store shared incoming supports
-let sharedSupport = false; // true if one incoming support is shared
-let sharedAttack = false; // true if one incoming attack is shared
+let sharedSupport = true; // true if one incoming support is shared
+let sharedAttack = true; // true if one incoming attack is shared
 
 let table = document.querySelector(".commands-container table:nth-child(1)"); // Incoming commands table
 // Evaluate every incoming command
@@ -148,10 +148,10 @@ for (let i = 2; i <= table.rows.length; i++) {
         continue;
     } else if (inc.attributes["data-command-type"].value === "support") {
         supportIncs.push(inc);
-        sharedSupport = false;
+        sharedSupport = true;
     } else if (inc.attributes["data-command-type"].value === "attack") {
         attackIncs.push(inc);
-        sharedAttack = false;
+        sharedAttack = true;
     }
 }  
 
